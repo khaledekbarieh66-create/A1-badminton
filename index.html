@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A1 Badminton Academy – حجز المواعيد</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C4A832;
+    --gold2: #8B6914;
+    --navy: #0D1F3C;
+    --navy2: #1B3A6B;
+    --blue: #2A6BB8;
+    --bg: linear-gradient(160deg, #0D1F3C 0%, #1B3A6B 45%, #0D1F3C 100%);
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(196,168,50,0.2);
+    --text: rgba(255,255,255,0.85);
+    --muted: rgba(255,255,255,0.35);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: 'Tajawal', sans-serif;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding-bottom: 60px;
+  }
+
+  #app { width: 100%; max-width: 680px; padding: 24px 14px; }
+
+  /* ── Screens ── */
+  .screen { display: none; animation: fadeIn .3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── Header ── */
+  .hero { text-align: center; margin-bottom: 28px; }
+  .hero .icon { font-size: 58px; filter: drop-shadow(0 0 20px #C4A83266); margin-bottom: 6px; }
+  .hero h1 { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #fff; }
+  .hero .coach { color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
+  .divider { width: 60px; height: 2px; background: linear-gradient(90deg,transparent,var(--gold),transparent); margin: 10px auto; }
+
+  /* ── Home cards ── */
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hcard {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
+    padding: 20px 14px; border-radius: 18px; cursor: pointer;
+    background: var(--card); border: 1.5px solid rgba(255,255,255,0.07);
+    transition: all .18s; text-align: right; width: 100%;
+  }
+  .hcard.full { grid-column: 1 / -1; }
+  .hcard .ci { font-size: 34px; }
+  .hcard .ct { color: #fff; font-weight: 900; font-size: 15px; font-family: inherit; }
+  .hcard .cd { color: var(--muted); font-size: 12px; font-family: inherit; }
+  .hcard.gold { border-color: rgba(196,168,50,.3); }
+  .hcard.blue { border-color: rgba(74,123,196,.3); }
+  .hcard.gold:hover { border-color: var(--gold); box-shadow: 0 8px 28px rgba(196,168,50,.2); transform: translateY(-3px); }
+  .hcard.blue:hover { border-color: var(--blue); box-shadow: 0 8px 28px rgba(42,107,184,.2); transform: translateY(-3px); }
+  .hcard.dark:hover { border-color: rgba(255,255,255,.2); transform: translateY(-3px); }
+  .badge-avail { background: rgba(34,197,94,.15); color: #86efac; border: 1px solid rgba(34,197,94,.3); border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+
+  /* ── Back button ── */
+  .back-btn {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+    color: var(--muted); border-radius: 10px; padding: 7px 16px;
+    cursor: pointer; font-size: 13px; margin-bottom: 20px; font-family: inherit;
+    transition: all .15s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+  /* ── Card ── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .card-label { color: rgba(196,168,50,.8); font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+
+  /* ── Inputs ── */
+  input[type=text], input[type=password], input[type=date], input[type=time], select, textarea {
+    width: 100%; padding: 11px 14px; border-radius: 11px;
+    border: 1.5px solid rgba(196,168,50,.3);
+    background: rgba(255,255,255,.06); color: #fff;
+    font-size: 14px; outline: none; font-family: inherit;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus { border-color: var(--gold); }
+  input::placeholder, textarea::placeholder { color: rgba(255,255,255,.22); }
+  select option { background: #1B3A6B; }
+  .field { margin-bottom: 12px; }
+
+  /* ── Buttons ── */
+  .btn-gold {
+    padding: 12px 28px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #fff; font-weight: 900; font-size: 15px; border: none;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 18px rgba(196,168,50,.3);
+    transition: all .15s; width: 100%;
+  }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(196,168,50,.4); }
+  .btn-gold:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .btn-red { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; border-radius: 8px; padding: 5px 14px; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .btn-outline { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); color: var(--muted); border-radius: 8px; padding: 5px 14px; cursor: pointer; font-size: 13px; font-family: inherit; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { flex:1; padding:10px 6px; border-radius:10px; border:1.5px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); color:var(--muted); font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .tab.active { border-color:rgba(196,168,50,.5); background:rgba(196,168,50,.12); color:var(--gold); }
+
+  /* ── Slot card ── */
+  .slot-card { background: rgba(255,255,255,.03); border: 1.5px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+  .slot-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; background: rgba(255,255,255,.03); border-bottom: 1px solid rgba(255,255,255,.05); }
+  .slot-head .court { color: var(--gold); font-weight: 900; font-size: 14px; }
+  .slot-head .time { color: rgba(255,255,255,.75); font-size: 13px; }
+  .slot-head .date { color: var(--muted); font-size: 12px; }
+  .slot-body { padding: 10px 14px; }
+
+  /* ── Capacity badge ── */
+  .cap-full { background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.3); border-radius:6px; padding:2px 9px; font-size:11px; font-weight:700; }
+  .cap-warn { background:rgba(251,191,36,.15); color:#fbbf24; border:1px solid rgba(251,191,36,.3); border-radius:6px; padding:2px 9px; font-size:11px; font-weight:700; }
+  .cap-ok   { background:rgba(34,197,94,.15);  color:#86efac; border:1px solid rgba(34,197,94,.3);  border-radius:6px; padding:2px 9px; font-size:11px; font-weight:700; }
+
+  /* ── Booking item ── */
+  .booking-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .booking-item:last-child { border-bottom:none; }
+  .booking-item .bname { flex:1; font-size:13px; }
+  .booking-item .bphone { color:var(--muted); font-size:11px; }
+
+  /* ── Slot select btn ── */
+  .slot-select {
+    width:100%; border-radius:14px; padding:12px 14px; text-align:right;
+    font-family:inherit; transition:all .15s; cursor:pointer; margin-bottom:8px;
+    border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03);
+  }
+  .slot-select:hover { border-color:rgba(196,168,50,.4); }
+  .slot-select.chosen { border:2px solid var(--gold); background:rgba(196,168,50,.1); }
+  .slot-select:disabled { opacity:.4; cursor:not-allowed; }
+  .slot-select .st { color:rgba(255,255,255,.8); font-weight:800; font-size:15px; }
+  .slot-select.chosen .st { color:var(--gold); }
+  .slot-select .sc { color:var(--muted); font-size:13px; margin-right:8px; }
+  .slot-select .sn { color:rgba(196,168,50,.6); font-size:11px; margin-right:6px; }
+  .sel-bar { height:2px; background:linear-gradient(90deg,var(--gold),transparent); border-radius:2px; margin-top:6px; }
+
+  /* ── Confirm box ── */
+  .confirm-box { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin:12px 0; }
+  .conf-row { display:flex; justify-content:space-between; font-size:14px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+  .conf-row:last-child { border-bottom:none; }
+  .conf-row span:first-child { color:var(--muted); }
+  .success-icon { font-size:64px; animation:popIn .5s ease; text-align:center; }
+  @keyframes popIn { from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ── Date label ── */
+  .date-label { color:var(--gold); font-weight:900; font-size:14px; margin:16px 0 8px; padding-right:2px; }
+
+  /* ── Error / success msgs ── */
+  .msg-err { color:#ef4444; font-size:12px; margin:6px 0; }
+  .msg-ok  { color:#22c55e; font-size:13px; text-align:center; margin:8px 0; }
+  .empty   { color:rgba(255,255,255,.22); text-align:center; font-size:14px; margin:28px 0; }
+
+  /* ── Cap selector ── */
+  .cap-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .capbtn { padding:8px 18px; border-radius:9px; border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:var(--muted); font-weight:800; font-size:14px; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .capbtn.active { border-color:var(--gold); background:rgba(196,168,50,.15); color:var(--gold); }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width:4px }
+  ::-webkit-scrollbar-thumb { background:rgba(196,168,50,.25); border-radius:4px }
+
+  .center-page { display:flex; flex-direction:column; align-items:center; padding-top:40px; }
+  .note-tag { background:rgba(196,168,50,.1); border:1px solid rgba(196,168,50,.25); border-radius:8px; padding:3px 10px; font-size:11px; color:rgba(196,168,50,.7); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════ HOME ═══════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="hero">
+      <div class="icon">🏸</div>
+      <h1>A1 Badminton Academy</h1>
+      <div class="coach">Coach Ayah</div>
+      <div class="divider"></div>
+      <p id="avail-count" style="color:rgba(196,168,50,.55);font-size:13px;margin-top:8px"></p>
+    </div>
+    <div class="home-grid">
+      <button class="hcard gold" onclick="go('book')">
+        <span class="ci">📅</span>
+        <span class="ct">احجز موعدك</span>
+        <span class="cd">اختر الوقت وسجّل اسمك</span>
+      </button>
+      <button class="hcard blue" onclick="go('manage')">
+        <span class="ci">🔍</span>
+        <span class="ct">حجوزاتي</span>
+        <span class="cd">ابحث أو ألغِ حجزك</span>
+      </button>
+      <button class="hcard dark full" onclick="go('login')">
+        <span class="ci">⚙️</span>
+        <span class="ct">إدارة المواعيد</span>
+        <span class="cd">للمدرب فقط — إضافة وحذف المواعيد</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ADMIN LOGIN ═══════════════ -->
+  <div id="screen-login" class="screen">
+    <button class="back-btn" onclick="go('home')">← رجوع</button>
+    <div class="center-page">
+      <div style="font-size:48px;margin-bottom:12px">🔐</div>
+      <div style="font-size:18px;font-weight:900;margin-bottom:4px">دخول المدرب</div>
+      <div class="divider"></div>
+      <div style="width:100%;max-width:340px;margin-top:16px">
+        <div class="field">
+          <input type="password" id="login-pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter')doLogin()" />
+        </div>
+        <p id="login-err" class="msg-err" style="display:none">❌ كلمة المرور غير صحيحة</p>
+        <button class="btn-gold" onclick="doLogin()">دخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ADMIN PANEL ═══════════════ -->
+  <div id="screen-panel" class="screen">
+    <button class="back-btn" onclick="go('home')">← رجوع</button>
+    <div class="hero" style="margin-bottom:18px">
+      <div style="font-size:18px;font-weight:900">لوحة الإدارة ⚙️</div>
+      <div class="divider"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-list" onclick="switchTab('list')">📋 المواعيد</button>
+      <button class="tab" id="tab-add" onclick="switchTab('add')">➕ إضافة موعد</button>
+    </div>
+
+    <!-- Add slot form -->
+    <div id="panel-add" style="display:none">
+      <div class="card">
+        <div class="field">
+          <div class="card-label">التاريخ</div>
+          <input type="date" id="a-date" />
+        </div>
+        <div class="field">
+          <div class="card-label">من الساعة</div>
+          <input type="time" id="a-from" />
+        </div>
+        <div class="field">
+          <div class="card-label">إلى الساعة</div>
+          <input type="time" id="a-to" />
+        </div>
+        <div class="field">
+          <div class="card-label">رقم الملعب</div>
+          <select id="a-court">
+            <option value="1">ملعب 1</option>
+            <option value="2">ملعب 2</option>
+            <option value="3">ملعب 3</option>
+            <option value="4">ملعب 4</option>
+            <option value="5">ملعب 5</option>
+            <option value="6">ملعب 6</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="card-label">عدد المقاعد</div>
+          <div class="cap-row" id="cap-row">
+            <button class="capbtn" onclick="setCap(2)">2</button>
+            <button class="capbtn active" onclick="setCap(4)">4</button>
+            <button class="capbtn" onclick="setCap(6)">6</button>
+            <button class="capbtn" onclick="setCap(8)">8</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="card-label">ملاحظة (اختياري)</div>
+          <input type="text" id="a-note" placeholder="مثال: تدريب متقدم..." />
+        </div>
+        <p id="add-ok" class="msg-ok" style="display:none">✅ تم إضافة الموعد!</p>
+        <button class="btn-gold" onclick="addSlot()">➕ إضافة الموعد</button>
+      </div>
+    </div>
+
+    <!-- Slots list -->
+    <div id="panel-list">
+      <div id="admin-slots-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BOOK ═══════════════ -->
+  <div id="screen-book" class="screen">
+    <button class="back-btn" onclick="go('home')">← رجوع</button>
+    <div class="hero" style="margin-bottom:18px">
+      <div style="font-size:18px;font-weight:900">احجز موعدك 🏸</div>
+      <div class="divider"></div>
+    </div>
+    <div id="book-slots-list"></div>
+    <div id="book-form" class="card" style="display:none">
+      <div class="card-label">بياناتك</div>
+      <div class="field"><input type="text" id="b-name" placeholder="الاسم الكامل *" /></div>
+      <div class="field"><input type="text" id="b-phone" placeholder="رقم الهاتف (اختياري)" /></div>
+      <p id="book-err" class="msg-err" style="display:none"></p>
+      <button class="btn-gold" onclick="doBook()">✅ تأكيد الحجز</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BOOK SUCCESS ═══════════════ -->
+  <div id="screen-success" class="screen">
+    <div class="center-page">
+      <div class="success-icon">✅</div>
+      <div style="font-size:20px;font-weight:900;margin:10px 0 4px">تم الحجز!</div>
+      <div class="divider"></div>
+      <div class="confirm-box" id="success-details"></div>
+      <button class="btn-gold" style="margin-top:16px;max-width:300px" onclick="go('home')">العودة للرئيسية</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MANAGE ═══════════════ -->
+  <div id="screen-manage" class="screen">
+    <button class="back-btn" onclick="go('home')">← رجوع</button>
+    <div class="hero" style="margin-bottom:18px">
+      <div style="font-size:18px;font-weight:900">حجوزاتي 🔍</div>
+      <div class="divider"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">ابحث باسمك أو رقم هاتفك</div>
+      <input type="text" id="search-input" placeholder="اكتب هنا..." oninput="doSearch()" />
+    </div>
+    <p id="cancel-ok" class="msg-ok" style="display:none">✅ تم إلغاء الحجز</p>
+    <div id="search-results"></div>
+  </div>
+
+</div><!-- end #app -->
+
+<script>
+// ══════════════════════════════════════════════════
+//  DATA — stored in localStorage
+// ══════════════════════════════════════════════════
+const PASS = "ayah2025";
+let slots = [];
+let selectedSlotId = null;
+let adminCap = 4;
+
+function save() { localStorage.setItem("a1_slots", JSON.stringify(slots)); }
+function load() {
+  try { slots = JSON.parse(localStorage.getItem("a1_slots")) || []; }
+  catch { slots = []; }
+}
+
+// ══════════════════════════════════════════════════
+//  ROUTING
+// ══════════════════════════════════════════════════
+function go(screen) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + screen).classList.add("active");
+  window.scrollTo(0,0);
+  if (screen === "home")   renderHome();
+  if (screen === "panel")  renderAdminList();
+  if (screen === "book")   renderBook();
+  if (screen === "manage") { document.getElementById("search-input").value=""; document.getElementById("search-results").innerHTML=""; document.getElementById("cancel-ok").style.display="none"; }
+}
+
+// ══════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════
+const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+function fmtDate(ds) {
+  const d = new Date(ds + "T00:00:00");
+  return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+function fmtTime(t) {
+  const [h,m] = t.split(":").map(Number);
+  const ap = h < 12 ? "ص" : "م";
+  const h12 = h===0?12:h>12?h-12:h;
+  return `${h12}:${String(m).padStart(2,"0")} ${ap}`;
+}
+function uid() { return Date.now() + Math.random().toString(36).slice(2); }
+function capBadge(n, cap) {
+  if (n >= cap) return `<span class="cap-full">مكتمل</span>`;
+  if (n >= cap-1) return `<span class="cap-warn">${cap-n} مقعد</span>`;
+  return `<span class="cap-ok">${cap-n} مقعد متاح</span>`;
+}
+
+// ══════════════════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════════════════
+function renderHome() {
+  const avail = slots.filter(s => s.bookings.length < s.capacity).length;
+  document.getElementById("avail-count").textContent =
+    avail > 0 ? `${avail} موعد متاح للحجز الآن` : "لا توجد مواعيد متاحة حالياً";
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN LOGIN
+// ══════════════════════════════════════════════════
+function doLogin() {
+  const v = document.getElementById("login-pass").value;
+  if (v === PASS) {
+    document.getElementById("login-err").style.display = "none";
+    document.getElementById("login-pass").value = "";
+    go("panel");
+  } else {
+    document.getElementById("login-err").style.display = "block";
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN PANEL — TABS
+// ══════════════════════════════════════════════════
+function switchTab(t) {
+  document.getElementById("tab-list").classList.toggle("active", t==="list");
+  document.getElementById("tab-add").classList.toggle("active", t==="add");
+  document.getElementById("panel-list").style.display = t==="list" ? "block" : "none";
+  document.getElementById("panel-add").style.display  = t==="add"  ? "block" : "none";
+  if (t==="list") renderAdminList();
+}
+
+function setCap(n) {
+  adminCap = n;
+  document.querySelectorAll(".capbtn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.textContent) === n);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN — ADD SLOT
+// ══════════════════════════════════════════════════
+function addSlot() {
+  const date  = document.getElementById("a-date").value;
+  const from  = document.getElementById("a-from").value;
+  const to    = document.getElementById("a-to").value;
+  const court = document.getElementById("a-court").value;
+  const note  = document.getElementById("a-note").value.trim();
+  if (!date || !from || !to) { alert("يرجى تعبئة التاريخ والوقت"); return; }
+  slots.push({ id: uid(), date, timeFrom: from, timeTo: to, court, capacity: adminCap, note, bookings: [] });
+  slots.sort((a,b) => (a.date+a.timeFrom) < (b.date+b.timeFrom) ? -1 : 1);
+  save();
+  document.getElementById("a-date").value = "";
+  document.getElementById("a-from").value = "";
+  document.getElementById("a-to").value   = "";
+  document.getElementById("a-note").value = "";
+  const ok = document.getElementById("add-ok");
+  ok.style.display = "block";
+  setTimeout(() => ok.style.display="none", 2500);
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN — LIST
+// ══════════════════════════════════════════════════
+function renderAdminList() {
+  const el = document.getElementById("admin-slots-list");
+  if (!slots.length) { el.innerHTML = `<p class="empty">لا توجد مواعيد. أضف موعداً من التبويب أعلاه.</p>`; return; }
+  el.innerHTML = slots.map(s => {
+    const bookingsHtml = s.bookings.length ? s.bookings.map(b => `
+      <div class="booking-item">
+        <span class="bname">👤 ${esc(b.name)}</span>
+        <span class="bphone">${esc(b.phone||"")}</span>
+        <button class="btn-red" onclick="cancelBooking('${s.id}','${b.id}')">إلغاء</button>
+      </div>`).join("") : `<p style="color:var(--muted);font-size:12px">لا توجد حجوزات بعد</p>`;
+    return `
+    <div class="slot-card">
+      <div class="slot-head">
+        <span class="court">🏸 ملعب ${s.court}</span>
+        <span class="date">${fmtDate(s.date)}</span>
+        <span class="time">${fmtTime(s.timeFrom)} – ${fmtTime(s.timeTo)}</span>
+        <span style="margin-right:auto">${capBadge(s.bookings.length, s.capacity)}</span>
+        <button class="btn-red" onclick="deleteSlot('${s.id}')">🗑️ حذف</button>
+      </div>
+      ${s.note ? `<div style="padding:6px 14px 0;color:rgba(196,168,50,.6);font-size:12px">📌 ${esc(s.note)}</div>` : ""}
+      <div class="slot-body">${bookingsHtml}</div>
+    </div>`;
+  }).join("");
+}
+
+function deleteSlot(id) {
+  if (!confirm("حذف هذا الموعد وجميع حجوزاته؟")) return;
+  slots = slots.filter(s => s.id !== id);
+  save(); renderAdminList();
+}
+
+function cancelBooking(slotId, bookId) {
+  if (!confirm("إلغاء هذا الحجز؟")) return;
+  const s = slots.find(s => s.id === slotId);
+  if (s) s.bookings = s.bookings.filter(b => b.id !== bookId);
+  save(); renderAdminList();
+}
+
+// ══════════════════════════════════════════════════
+//  BOOK
+// ══════════════════════════════════════════════════
+function renderBook() {
+  selectedSlotId = null;
+  document.getElementById("book-form").style.display = "none";
+  document.getElementById("b-name").value = "";
+  document.getElementById("b-phone").value = "";
+  document.getElementById("book-err").style.display = "none";
+
+  const avail = slots.filter(s => s.bookings.length < s.capacity);
+  const el = document.getElementById("book-slots-list");
+
+  if (!avail.length) {
+    el.innerHTML = `<p class="empty">لا توجد مواعيد متاحة حالياً.<br>تواصل مع المدرب.</p>`;
+    return;
+  }
+
+  // group by date
+  const byDate = {};
+  avail.forEach(s => { if (!byDate[s.date]) byDate[s.date] = []; byDate[s.date].push(s); });
+  const dates = Object.keys(byDate).sort();
+
+  el.innerHTML = dates.map(d => `
+    <div class="date-label">${fmtDate(d)}</div>
+    ${byDate[d].map(s => `
+      <button class="slot-select" id="sbt-${s.id}" onclick="selectSlot('${s.id}')">
+        <div style="display:flex;align-items:center;gap:0">
+          <span class="st">${fmtTime(s.timeFrom)} – ${fmtTime(s.timeTo)}</span>
+          <span class="sc">ملعب ${s.court}</span>
+          ${s.note ? `<span class="sn">• ${esc(s.note)}</span>` : ""}
+          <span style="margin-right:auto">${capBadge(s.bookings.length, s.capacity)}</span>
+        </div>
+      </button>`).join("")}
+  `).join("");
+}
+
+function selectSlot(id) {
+  selectedSlotId = id;
+  document.querySelectorAll(".slot-select").forEach(b => b.classList.remove("chosen"));
+  const btn = document.getElementById("sbt-" + id);
+  if (btn) {
+    btn.classList.add("chosen");
+    btn.innerHTML += `<div class="sel-bar"></div>`;
+  }
+  document.getElementById("book-form").style.display = "block";
+  document.getElementById("book-form").scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+function doBook() {
+  const name  = document.getElementById("b-name").value.trim();
+  const phone = document.getElementById("b-phone").value.trim();
+  const errEl = document.getElementById("book-err");
+  if (!selectedSlotId) { errEl.textContent="اختر موعداً أولاً"; errEl.style.display="block"; return; }
+  if (!name) { errEl.textContent="أدخل اسمك الكامل"; errEl.style.display="block"; return; }
+  errEl.style.display = "none";
+  const s = slots.find(s => s.id === selectedSlotId);
+  if (!s || s.bookings.length >= s.capacity) { errEl.textContent="عذراً، هذا الموعد اكتمل"; errEl.style.display="block"; return; }
+  s.bookings.push({ id: uid(), name, phone, at: Date.now() });
+  save();
+  // show success
+  document.getElementById("success-details").innerHTML = `
+    <div class="conf-row"><span>👤 الاسم</span><span>${esc(name)}</span></div>
+    <div class="conf-row"><span>📅 التاريخ</span><span>${fmtDate(s.date)}</span></div>
+    <div class="conf-row"><span>⏰ الوقت</span><span>${fmtTime(s.timeFrom)} – ${fmtTime(s.timeTo)}</span></div>
+    <div class="conf-row"><span>🏸 الملعب</span><span>ملعب ${s.court}</span></div>
+  `;
+  go("success");
+}
+
+// ══════════════════════════════════════════════════
+//  MANAGE / SEARCH
+// ══════════════════════════════════════════════════
+function doSearch() {
+  const q = document.getElementById("search-input").value.trim();
+  const el = document.getElementById("search-results");
+  document.getElementById("cancel-ok").style.display = "none";
+  if (q.length < 2) { el.innerHTML = ""; return; }
+  const results = [];
+  slots.forEach(s => s.bookings.forEach(b => {
+    if (b.name.includes(q) || (b.phone && b.phone.includes(q))) results.push({s,b});
+  }));
+  if (!results.length) { el.innerHTML=`<p class="empty">لا توجد حجوزات بهذا الاسم أو الرقم</p>`; return; }
+  el.innerHTML = results.map(({s,b}) => `
+    <div class="slot-card" style="border-color:rgba(196,168,50,.3)">
+      <div class="slot-head">
+        <span class="court">🏸 ملعب ${s.court}</span>
+        <span class="date">${fmtDate(s.date)}</span>
+        <span class="time">${fmtTime(s.timeFrom)} – ${fmtTime(s.timeTo)}</span>
+      </div>
+      <div class="slot-body">
+        <div class="booking-item">
+          <span class="bname">👤 ${esc(b.name)}</span>
+          <span class="bphone">${esc(b.phone||"")}</span>
+          <button class="btn-red" onclick="cancelFromManage('${s.id}','${b.id}')">إلغاء الحجز</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+function cancelFromManage(slotId, bookId) {
+  if (!confirm("إلغاء هذا الحجز؟")) return;
+  const s = slots.find(s => s.id === slotId);
+  if (s) s.bookings = s.bookings.filter(b => b.id !== bookId);
+  save();
+  document.getElementById("search-input").value = "";
+  document.getElementById("search-results").innerHTML = "";
+  const ok = document.getElementById("cancel-ok");
+  ok.style.display = "block";
+  setTimeout(() => ok.style.display="none", 3000);
+}
+
+// ══════════════════════════════════════════════════
+//  XSS guard
+// ══════════════════════════════════════════════════
+function esc(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+load();
+renderHome();
+</script>
+</body>
+</html>
